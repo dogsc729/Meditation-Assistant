@@ -9,13 +9,14 @@ import subprocess
 from parse_data.parse import parse
 from threading import Thread
 from sig_process import processing
+from garden_game import game_start
 
 class MyMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Real-time Frequency Response Plot")
-        self.setGeometry(100, 100, 1920, 1080)
+        self.setGeometry(200, 100, 1920, 1080)
 
         # Create main layout
         layout = QVBoxLayout()
@@ -36,7 +37,7 @@ class MyMainWindow(QMainWindow):
         # Timer for updating the plots
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_plots)
-        self.timer.start(1000)  # Update plots every 300 milliseconds
+        self.timer.start(300)  # Update plots every 300 milliseconds
 
     def init_plots(self):
         # Initialize the subplots for each channel
@@ -59,6 +60,7 @@ class MyMainWindow(QMainWindow):
             ax.set_title(f'Channel {i+1}')
             ax.set_xlabel('Frequency')
             ax.set_ylabel('Magnitude')
+        self.figure.subplots_adjust(hspace=1, wspace=0.5)
         # Update the canvas
         self.canvas.draw()
 
@@ -71,6 +73,14 @@ class MyMainWindow(QMainWindow):
             magnitude = np.random.rand(100)
             frequency_responses.append((frequencies, magnitude))
         return frequency_responses
+def start_app(target_file):
+
+    #t1 = Thread(target = parse, args = (target_file,))
+    #t1.start()
+    app = QApplication(sys.argv)
+    window = MyMainWindow()
+    window.show()
+    sys.exit(app.exec_())
 
 if __name__ == "__main__":
     sys.path.append('./parse_data')
@@ -84,10 +94,13 @@ if __name__ == "__main__":
     file_name = output.decode("utf-8")
     target_file = target_folder + file_name[:-1] # remove the new line
 
-    t1 = Thread(target = parse, args = (target_file,))
-    t1.start()
-
     app = QApplication(sys.argv)
     window = MyMainWindow()
     window.show()
+
+    t1 = Thread(target = parse, args = (target_file,))
+    t1.start()
+    
+    #game_start()
+
     sys.exit(app.exec_())
