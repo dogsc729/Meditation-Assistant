@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.signal import butter, filtfilt
+from scipy.signal import butter, filtfilt, freqz
 import matplotlib.pyplot as plt
 import matplotlib
 from threading import Thread
@@ -43,19 +43,24 @@ def apply_lowpass_filter(data, cutoff, fs, order=5):
     return filtered_data
 
 def processing():
-    print("test")
-    matplotlib.use('agg')
+    print("signal processing start")
     while 1:
         try:
-            signal = np.load("./parse_data/data.npy")
+            data = np.load("./parse_data/data.npy")
         except:
-            print("error")
+            print("loss packet alert!")
             continue
         fs = 255
 
-        #print(signal)
+        #print(signal.size())
         # Filter for Alpha wave (7.5 to 13 Hz)
-        test = signal[0, :]
+        num_channels = 8
+        frequency_responses = []
+        for i in range(num_channels):
+            beta_filtered = apply_highpass_filter(data[i, :], 14, fs, order=15)
+            frequencies, response = freqz(beta_filtered, fs=fs)
+            frequency_responses.append((frequencies, np.abs(response)))
+        return frequency_responses
         alpha_filtered = apply_bandpass_filter(test, 7.5, 13, fs, order=8)
 
         # Filter for Beta wave (14 Hz and greater)
@@ -67,17 +72,18 @@ def processing():
         # Filter for Theta wave (3.5 to 7.5 Hz)
         theta_filtered = apply_bandpass_filter(test, 3.5, 7.5, fs, order=6)
 
-        t = [i for i in range(256)]
+        frequencies, response = signal.freqz(beta_filtered, fs=fs)
         #plt.figure()
         #plt.plot(t, alpha_filtered, label='Alpha', color='black')
-        plt.plot(t, beta_filtered, label='Beta', color='purple')
+        #plt.plot(t, beta_filtered, label='Beta', color='purple')
         #plt.plot(t, delta_filtered, label='Delta', color='green')
         #plt.plot(t, theta_filtered, label='Theta', color='blue')
-        plt.legend()
-        plt.show()
+        #plt.legend()
+        #plt.show()
         #plt.pause(0.5)
         #plt.close()
         #plt.savefig('example_plot.png')
+        return frequencies, np.abs(response)
 
 def main():
     sys.path.append('./parse_data')
@@ -92,13 +98,12 @@ def main():
     target_file = target_folder + file_name[:-1] # remove the new line
     try:
         t1 = Thread(target = parse, args = (target_file,))
-        t2 = Thread(target = processing)
+        #t2 = Thread(target = processing)
 
         t1.start()
-        t2.start()
+        #t2.start()
+        processing()
 
-        t1.join()
-        t2.join()
     except FileNotFoundError:
         print("Parsing Failed!")
         return
