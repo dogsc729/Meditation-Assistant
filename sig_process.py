@@ -45,11 +45,12 @@ def apply_lowpass_filter(data, cutoff, fs, order=5):
 def processing():
     print("signal processing start")
     try:
-        data = np.load("./parse_data/data.npy")
+        data = np.load("data.npy")
+        np.save("backup.npy", data)
     except:
-        print("loss packet alert!")
-    fs = 255
+        data = np.load("backup.npy")
 
+    fs = 255
     #print(signal.size())
     # Filter for Alpha wave (7.5 to 13 Hz)
     num_channels = 8
