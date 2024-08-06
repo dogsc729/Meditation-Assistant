@@ -50,14 +50,20 @@ def processing():
     except:
         data = np.load("backup.npy")
 
-    fs = 255
+    fs = 256
     #print(signal.size())
     # Filter for Alpha wave (7.5 to 13 Hz)
     num_channels = 8
     frequency_responses = []
     for i in range(num_channels):
-        beta_filtered = apply_highpass_filter(data[i, :], 14, fs, order=15)
-        frequencies, response = freqz(beta_filtered, fs=fs)
+        #normalized_signal = (data[i, :] - np.std(data[i, :])) / np.mean(data[i, :])
+        #noise_filtered = apply_lowpass_filter(normalized_signal, 40, fs, order=15)
+        noise_filtered = apply_lowpass_filter(data[i, :],  40, fs, order=15)
+        low_beta_filtered = apply_bandpass_filter(noise_filtered, 12, 15, fs, order=6)
+        mid_beta_filtered = apply_bandpass_filter(noise_filtered, 15, 20, fs, order=6)
+        high_beta_filtered = apply_bandpass_filter(noise_filtered, 20, 40, fs, order=6)
+        frequencies, response = freqz(mid_beta_filtered, fs=fs)
+        #print("max freq", np.max(frequencies))
         frequency_responses.append((frequencies, np.abs(response)))
     return frequency_responses
     alpha_filtered = apply_bandpass_filter(test, 7.5, 13, fs, order=8)
