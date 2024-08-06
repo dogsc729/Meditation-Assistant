@@ -1,5 +1,6 @@
 import pygame
 import sys
+
 import numpy as np
 
 def game_start():
@@ -80,6 +81,7 @@ def game_start():
             final_score_textRect.x = screen.get_width() / 2
             final_score_textRect.y = screen.get_width() / 2
             screen.blit(final_score_text, final_score_textRect)
+
         pygame.time.delay(1000)
         # Update the display
         pygame.display.flip()
